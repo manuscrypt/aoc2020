@@ -6,19 +6,15 @@ import Html exposing (div, text)
 main : Html.Html msg
 main =
     let
-        sorted =
-            inputList
-                |> List.sort
-
         ( a2, b2 ) =
-            findMatches sorted 2020
+            findMatches inputList 2020
                 |> Maybe.withDefault ( 0, 0 )
 
         ( a3, b3, c3 ) =
-            sorted
+            inputList
                 |> List.filterMap
                     (\i ->
-                        findMatches sorted (2020 - i)
+                        findMatches inputList (2020 - i)
                             |> Maybe.map (\( a, b ) -> ( i, a, b ))
                     )
                 |> List.head
