@@ -91,10 +91,18 @@ checkHeight : String -> Parser Height
 checkHeight s =
     case String.right 2 s of
         "in" ->
-            succeed (String.toInt (String.slice 0 -2 s) |> Maybe.withDefault 0 |> Inch)
+            succeed
+                (String.toInt (String.dropRight 2 s)
+                    |> Maybe.withDefault 0
+                    |> Inch
+                )
 
         "cm" ->
-            succeed (String.toInt (String.slice 0 -2 s) |> Maybe.withDefault 0 |> Cm)
+            succeed
+                (String.toInt (String.dropRight 2 s)
+                    |> Maybe.withDefault 0
+                    |> Cm
+                )
 
         _ ->
             Parser.problem "not a valid height"
