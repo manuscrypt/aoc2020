@@ -89,7 +89,7 @@ parseHeight str =
 
 checkHeight : String -> Parser Height
 checkHeight s =
-    case getLastTwo s of
+    case String.right 2 s of
         "in" ->
             succeed (String.toInt (String.slice 0 -2 s) |> Maybe.withDefault 0 |> Inch)
 
@@ -98,15 +98,6 @@ checkHeight s =
 
         _ ->
             Parser.problem "not a valid height"
-
-
-getLastTwo : String -> String
-getLastTwo s =
-    let
-        len =
-            String.length s
-    in
-    String.slice (len - 2) len s
 
 
 parseInt : String -> Parser Int
