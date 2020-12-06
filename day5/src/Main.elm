@@ -1,5 +1,6 @@
 module Main exposing (lower, main)
 
+import Binary
 import Dict
 import Html exposing (Html, div, text)
 
@@ -26,10 +27,27 @@ main =
 
         partB =
             missing |> Dict.keys |> List.map (\k -> div [] [ text (String.fromInt k) ]) |> div []
+
+        binA =
+            input
+                |> String.lines
+                |> List.map
+                    (String.replace "F" "0"
+                        >> String.replace "B" "1"
+                        >> String.replace "L" "0"
+                        >> String.replace "R" "1"
+                        >> Binary.fromString 1
+                        >> Binary.toDecimal
+                    )
+                |> List.maximum
+                |> Maybe.map String.fromInt
+                |> Maybe.withDefault "no solution"
     in
     div []
         [ output "part1"
         , output (String.fromInt max)
+        , output "part1Bin"
+        , output binA
         , output "part2"
         , partB
         ]
