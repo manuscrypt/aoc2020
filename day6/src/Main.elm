@@ -11,7 +11,12 @@ main =
         partA : Int
         partA =
             splitLines input
-                |> List.map (\line -> String.toList (String.replace " " "" line) |> Set.fromList |> Set.size)
+                |> List.map
+                    (\line ->
+                        String.toList (String.replace " " "" line)
+                            |> Set.fromList
+                            |> Set.size
+                    )
                 |> List.sum
 
         partB : Int
