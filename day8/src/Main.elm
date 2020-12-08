@@ -1,9 +1,7 @@
 module Main exposing (main)
 
 import Array exposing (Array)
-import Graph exposing (Edge, Graph, Node)
 import Html exposing (Html, div, text)
-import List.Extra as List
 import Parser exposing ((|.), (|=), Parser, keyword, oneOf, succeed)
 
 
