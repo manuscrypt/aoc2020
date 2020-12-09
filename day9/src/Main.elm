@@ -10,15 +10,15 @@ import Parser exposing ((|.), (|=), Parser, keyword, oneOf, succeed)
 main : Html.Html msg
 main =
     let
-        ( nums, pre ) =
+        ( nums, preamble ) =
             parseInput input
 
         partA =
-            findMatchIn ( nums, pre ) 0
+            solveA ( nums, preamble ) 0
                 |> Maybe.withDefault -1
 
         partB =
-            findWeakness partA nums
+            solveB nums partA
     in
     div []
         [ output "part1"
@@ -28,56 +28,43 @@ main =
         ]
 
 
-findWeakness : Int -> List Int -> Int
-findWeakness target nums =
-    let
-        resultList =
-            solveB nums target |> Maybe.withDefault [] |> List.sort
-
-        ( head, last ) =
-            ( List.head resultList |> Maybe.withDefault -1
-            , List.last resultList |> Maybe.withDefault -1
-            )
-    in
-    head + last
-
-
+solveB : List Int -> Int -> Int
 solveB all target =
     all
         |> List.indexedMap (\i f -> buildSum i 2 target all)
         |> List.filterMap identity
         |> List.head
+        |> Maybe.withDefault []
+        |> List.sort
+        |> (\res ->
+                (List.head res |> Maybe.withDefault -1)
+                    + (List.last res |> Maybe.withDefault -1)
+           )
 
 
 buildSum : Int -> Int -> Int -> List Int -> Maybe (List Int)
 buildSum from count target list =
     let
-        arr =
-            subList from count list
+        subList =
+            sliceList from (from + count) list
 
         sum =
-            List.sum arr
+            List.sum subList
     in
     if sum < target then
         buildSum from (count + 1) target list
 
     else if sum == target then
-        Just arr
+        Just subList
 
     else
         Nothing
 
 
-subList from count list =
-    Array.fromList list
-        |> Array.slice from (from + count)
-        |> Array.toList
-
-
-findMatchIn : ( List Int, Int ) -> Int -> Maybe Int
-findMatchIn ( numbers, preamble ) idx =
+solveA : ( List Int, Int ) -> Int -> Maybe Int
+solveA ( numbers, preamble ) idx =
     if idx < preamble then
-        findMatchIn ( numbers, preamble ) (idx + 1)
+        solveA ( numbers, preamble ) (idx + 1)
 
     else
         case List.getAt idx numbers of
@@ -85,20 +72,17 @@ findMatchIn ( numbers, preamble ) idx =
                 Nothing
 
             Just target ->
-                case
-                    findMatch
-                        (numbers
-                            |> Array.fromList
-                            |> Array.slice (idx - preamble) idx
-                            |> Array.toList
-                        )
-                        target
-                of
+                case findMatch (sliceList (idx - preamble) idx numbers) target of
                     Nothing ->
                         Just target
 
                     Just pair ->
-                        findMatchIn ( numbers, preamble ) (idx + 1)
+                        solveA ( numbers, preamble ) (idx + 1)
+
+
+sliceList : Int -> Int -> List a -> List a
+sliceList from to =
+    Array.fromList >> Array.slice from to >> Array.toList
 
 
 findMatch : List Int -> Int -> Maybe ( Int, Int )
