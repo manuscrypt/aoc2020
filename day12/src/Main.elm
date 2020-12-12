@@ -186,28 +186,20 @@ parseInput lines =
 parseInstruction : Parser Instruction
 parseInstruction =
     oneOf
-        [ parseMove
-        , parseRotation
-        , succeed Forward |. symbol "F" |= int
+        [ succeed Move
+            |= oneOf
+                [ succeed N |. symbol "N"
+                , succeed E |. symbol "E"
+                , succeed S |. symbol "S"
+                , succeed W |. symbol "W"
+                ]
+        , succeed Rotate
+            |= oneOf
+                [ succeed L |. symbol "L"
+                , succeed R |. symbol "R"
+                ]
+        , succeed Forward |. symbol "F"
         ]
-
-
-parseRotation : Parser Instruction
-parseRotation =
-    succeed Rotate
-        |= oneOf [ succeed L |. symbol "L", succeed R |. symbol "R" ]
-        |= int
-
-
-parseMove : Parser Instruction
-parseMove =
-    succeed Move
-        |= oneOf
-            [ succeed N |. symbol "N"
-            , succeed E |. symbol "E"
-            , succeed S |. symbol "S"
-            , succeed W |. symbol "W"
-            ]
         |= int
 
 
