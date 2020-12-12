@@ -87,10 +87,6 @@ rotateB ( x, y ) rot amt ( wx, wy ) =
         ( wx, wy )
 
     else
-        let
-            _ =
-                ( wx - x, wy - y )
-        in
         rotateB ( x, y )
             rot
             (amt - 1)
