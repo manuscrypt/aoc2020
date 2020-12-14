@@ -59,30 +59,34 @@ main =
 
 applyNextDecoder : Model -> Model
 applyNextDecoder model =
-    case Array.get model.pc model.instructions of
+    case Array.get model.pc model.instructions |> Debug.log "model" of
         Nothing ->
+            let
+                xx =
+                    Debug.log "done" model.pc
+            in
             model
 
         Just i ->
-            case i of
-                UpdateMask mask ->
-                    { model
-                        | mask = mask
-                        , pc = model.pc + 1
-                    }
+            applyNextDecoder <|
+                case i of
+                    UpdateMask mask ->
+                        { model
+                            | mask = mask
+                            , pc = model.pc + 1
+                        }
 
-                WriteValue addr val ->
-                    { model
-                        | memory =
-                            getAddresses model.mask addr
-                                |> List.foldl
-                                    (\a mem ->
-                                        Dict.insert a val mem
-                                    )
-                                    model.memory
-                        , pc = model.pc + 1
-                    }
-                        |> applyNextDecoder
+                    WriteValue addr val ->
+                        { model
+                            | memory =
+                                getAddresses model.mask addr
+                                    |> List.foldl
+                                        (\a mem ->
+                                            Dict.insert a val mem
+                                        )
+                                        model.memory
+                            , pc = model.pc + 1
+                        }
 
 
 getAddresses : Mask -> Int -> List Int
@@ -145,19 +149,19 @@ applyNextInstruction model =
             model
 
         Just i ->
-            case i of
-                UpdateMask mask ->
-                    { model | mask = mask, pc = model.pc + 1 }
+            applyNextInstruction <|
+                case i of
+                    UpdateMask mask ->
+                        { model | mask = mask, pc = model.pc + 1 }
 
-                WriteValue addr val ->
-                    { model
-                        | memory =
-                            Dict.insert addr
-                                (applyMask model.mask val)
-                                model.memory
-                        , pc = model.pc + 1
-                    }
-                        |> applyNextInstruction
+                    WriteValue addr val ->
+                        { model
+                            | memory =
+                                Dict.insert addr
+                                    (applyMask model.mask val)
+                                    model.memory
+                            , pc = model.pc + 1
+                        }
 
 
 applyMask : List MaskBit -> Int -> Int
