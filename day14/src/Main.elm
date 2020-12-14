@@ -152,17 +152,12 @@ applyNextInstruction model =
                 WriteValue addr val ->
                     { model
                         | memory =
-                            applyWriteValue addr model.mask val model.memory
+                            Dict.insert addr
+                                (applyMask model.mask val)
+                                model.memory
                         , pc = model.pc + 1
                     }
                         |> applyNextInstruction
-
-
-applyWriteValue : Int -> Mask -> Int -> Dict Int Int -> Dict Int Int
-applyWriteValue address mask value memory =
-    Dict.insert address
-        (applyMask mask value)
-        memory
 
 
 applyMask : List MaskBit -> Int -> Int
