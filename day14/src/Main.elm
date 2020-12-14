@@ -59,12 +59,8 @@ main =
 
 applyNextDecoder : Model -> Model
 applyNextDecoder model =
-    case Array.get model.pc model.instructions |> Debug.log "model" of
+    case Array.get model.pc model.instructions of
         Nothing ->
-            let
-                xx =
-                    Debug.log "done" model.pc
-            in
             model
 
         Just i ->
