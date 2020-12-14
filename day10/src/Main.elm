@@ -18,37 +18,41 @@ main =
             solveA nums
 
         partB =
-            solveB nums |> Debug.log "tree"
+            solveB nums 0 []
+                |> Debug.log "tree"
+                |> List.length
     in
     div []
         [ output "part1"
         , output (String.fromInt partA)
         , output "part2"
-        , output (String.fromInt (Tree.count partB))
+        , output (String.fromInt partB)
         ]
 
 
-solveB nums =
-    let
-        tree =
-            Tree.singleton 0
-    in
-    addChildren nums tree
+solveB : List Int -> Int -> List (List Int) -> List (List Int)
+solveB nums index lists =
+    case List.getAt index nums of
+        Nothing ->
+            lists
+
+        Just c ->
+            let
+                xx =
+                    Debug.log "c" c
+
+                validPaths =
+                    List.filter (\i -> i > c && i - c <= 3) nums
+                        |> Debug.log "vps"
+            in
+            solveB nums (index + 1) (lists ++ [ validPaths ])
 
 
-addChildren : List Int -> Tree Int -> Tree Int
-addChildren nums tree =
-    let
-        cur =
-            Tree.label tree
-
-        newTree =
-            nums
-                |> List.filter (\i -> abs (cur - i) <= 3 && abs (cur - i) > 0)
-                |> List.map Tree.singleton
-                |> (\c -> Tree.replaceChildren c tree)
-    in
-    addChildren nums newTree
+getValid : List Int -> List (List Int)
+getValid nums =
+    List.range 1 (List.length nums - 1)
+        |> List.map (\i -> List.removeAt i nums)
+        |> List.filter isValid
 
 
 diffs2 : List Int -> List Int
