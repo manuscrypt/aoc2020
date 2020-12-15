@@ -7,7 +7,7 @@ namespace ConsoleApp1
 {
 	class Program
 	{
-		private static readonly List<int> Spoken = new List<int>{13, 16, 0, 12, 15, 1};
+		private static readonly List<int> Spoken = new List<int> { 13, 16, 0, 12, 15, 1 };
 		private static int Target = 30000000;
 
 		static void Main(string[] args)
@@ -21,31 +21,31 @@ namespace ConsoleApp1
 			}
 
 			var i = Spoken.Count;
+			var lastSpoken = Spoken.Last();
 			while (i < Target)
 			{
-				Turn(i++, Spoken, cache);
+				lastSpoken = Turn(i++, lastSpoken, cache);
 			}
 
-			sw.Stop();
-
-			Console.WriteLine(Spoken.Last());
+			Console.WriteLine(lastSpoken);
 			Console.WriteLine("Took {0} secs", sw.Elapsed.TotalSeconds);
 		}
 
-		private static void Turn(int index, ICollection<int> spoken, IDictionary<int, int> dict)
+		private static int Turn(int index, int lastSpoken, IDictionary<int, int> dict)
 		{
-			var lastSpoken = spoken.Last();
-
+			int spoken;
 			if (dict.ContainsKey(lastSpoken))
 			{
-				spoken.Add(index - dict[lastSpoken]);
+				spoken = index - dict[lastSpoken];
 			}
 			else
 			{
-				spoken.Add(0);
+				spoken = 0;
 			}
 
 			dict[lastSpoken] = index;
+
+			return spoken;
 		}
 	}
 }
