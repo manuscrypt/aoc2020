@@ -1,14 +1,9 @@
 module Main exposing (main)
 
+import Dict exposing (Dict)
 import Html exposing (Html, div, text)
+import List
 import List.Extra as List
-
-
-type alias Model =
-    { index : Int
-    , prev : Int
-    , history : List ( Int, Int )
-    }
 
 
 main : Html.Html msg
@@ -18,15 +13,10 @@ main =
             input
 
         partA =
-            solveTarget 30000000 (parseInput localInput)
+            solve (parseInput localInput) 2020
 
         partB =
-            -1
-
-        --solveTarget 30000000 (parseInput localInput)
-        -- xx =
-        --     solveUpTo 2020 localInput
-        --solveTarget 100 (parseInput localInput)
+            solve (parseInput localInput) 30000000
     in
     div []
         [ output "part1"
@@ -36,84 +26,56 @@ main =
         ]
 
 
-solveUpTo : Int -> String -> List (List Int)
-solveUpTo count str =
-    List.range 0 count
-        |> List.map
-            (\c ->
-                solveA c (parseInput str)
-                    |> .history
-                    |> List.map Tuple.second
-                    |> (\h -> Debug.log (String.fromInt c ++ "=>" ++ String.fromInt (List.length h)) h)
-            )
-
-
-solveTarget : Int -> Model -> Int
-solveTarget target model =
+solve : List Int -> Int -> Int
+solve startNums target =
     let
-        result =
-            solveA target model
+        ( lastSpoken, rest ) =
+            startNums
+                |> List.unconsLast
+                |> Maybe.withDefault ( 0, [] )
+
+        dict =
+            rest
+                |> List.indexedMap Tuple.pair
+                |> List.foldl (\( i, num ) d -> Dict.insert num (i + 1) d) Dict.empty
+
+        idx =
+            List.length startNums
     in
-    List.head result.history
-        |> Maybe.map Tuple.second
-        |> Maybe.withDefault -1
+    step idx target lastSpoken dict
 
 
-solveA : Int -> Model -> Model
-solveA target model =
-    if model.index == target then
-        model
+step : Int -> Int -> Int -> Dict Int Int -> Int
+step i target lastSpoken dict =
+    if i < target then
+        let
+            ( nextSpoken, nextDict ) =
+                turn i lastSpoken dict
+        in
+        step (i + 1) target nextSpoken nextDict
 
     else
-        let
-            matches =
-                model.history
-                    |> List.filter (\( _, n ) -> n == model.prev)
-
-            next =
-                case matches of
-                    [ _ ] ->
-                        { model
-                            | history = ( model.index + 1, 0 ) :: model.history
-                            , prev = 0
-                            , index = model.index + 1
-                        }
-
-                    [ x, y ] ->
-                        let
-                            diff =
-                                abs (Tuple.first y - Tuple.first x)
-
-                            newHistory =
-                                model.history
-                                    |> List.filter (\t -> t /= y)
-                        in
-                        { model
-                            | history = ( model.index + 1, diff ) :: newHistory
-                            , prev = diff
-                            , index = model.index + 1
-                        }
-
-                    _ ->
-                        model
-
-            -- yy =
-            --     Debug.log "spoken" next.prev
-        in
-        solveA target next
+        lastSpoken
 
 
-parseInput : String -> Model
-parseInput line =
+turn : Int -> Int -> Dict Int Int -> ( Int, Dict Int Int )
+turn index lastSpoken dict =
     let
-        nums =
-            String.split "," line
-                |> List.filterMap String.toInt
+        spoken =
+            case Dict.get lastSpoken dict of
+                Nothing ->
+                    0
+
+                Just lastIdx ->
+                    index - lastIdx
     in
-    { index = List.length nums
-    , prev = nums |> List.reverse |> List.head |> Maybe.withDefault -1
-    , history = nums |> List.indexedMap (\i n -> ( i + 1, n )) |> List.reverse
-    }
+    ( spoken, Dict.insert lastSpoken index dict )
+
+
+parseInput : String -> List Int
+parseInput line =
+    String.split "," line
+        |> List.filterMap String.toInt
 
 
 output : String -> Html msg
@@ -124,16 +86,6 @@ output s =
 sampleA : String
 sampleA =
     """0,3,6"""
-
-
-sampleB : String
-sampleB =
-    """1,3,2"""
-
-
-sampleC : String
-sampleC =
-    """2,1,3"""
 
 
 input : String
