@@ -5,22 +5,19 @@ import Html exposing (Html, div, text)
 import List
 import List.Extra as List
 import Parser exposing ((|.), (|=), Parser, keyword, oneOf, succeed)
-import Tree exposing (Tree)
 
 
 main : Html.Html msg
 main =
     let
         nums =
-            parseInput sampleA |> Debug.log "a"
+            parseInput sampleB
 
         partA =
             solveA nums
 
         partB =
-            solveB nums 0 []
-                |> Debug.log "tree"
-                |> List.length
+            solveSlow [ nums ] [] 0
     in
     div []
         [ output "part1"
@@ -30,28 +27,38 @@ main =
         ]
 
 
-solveB : List Int -> Int -> List (List Int) -> List (List Int)
-solveB nums index lists =
-    case List.getAt index nums of
-        Nothing ->
-            lists
+solveSlow : List (List Int) -> List (List Int) -> Int -> Int
+solveSlow remaining visited res =
+    case remaining of
+        [] ->
+            res
 
-        Just c ->
-            let
-                xx =
-                    Debug.log "c" c
+        nums :: rest ->
+            if List.member nums visited then
+                solveSlow rest visited res
 
-                validPaths =
-                    List.filter (\i -> i > c && i - c <= 3) nums
-                        |> Debug.log "vps"
-            in
-            solveB nums (index + 1) (lists ++ [ validPaths ])
+            else if isValid nums then
+                let
+                    subLists =
+                        getNewValid nums (nums :: visited)
+
+                    newRemaining =
+                        (rest ++ subLists)
+                            |> List.unique
+                            |> List.filter (\sl -> not <| List.member sl visited)
+                in
+                solveSlow newRemaining (nums :: visited) (res + 1)
+
+            else
+                solveSlow rest (nums :: visited) res
 
 
-getValid : List Int -> List (List Int)
-getValid nums =
-    List.range 1 (List.length nums - 1)
+getNewValid : List Int -> List (List Int) -> List (List Int)
+getNewValid nums visited =
+    List.range 1 (List.length nums - 2)
         |> List.map (\i -> List.removeAt i nums)
+        |> List.filter (\sl -> not <| List.member sl visited)
+        |> List.unique
         |> List.filter isValid
 
 
