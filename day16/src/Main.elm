@@ -47,7 +47,7 @@ main =
 
 departureNotes : List ( Int, Note ) -> List ( Int, Note )
 departureNotes =
-    List.filter (\( _, n ) -> String.startsWith "departure" n.category)
+    List.filter (\( _, note ) -> String.startsWith "departure" note.category)
 
 
 collect : List ( Int, Note ) -> List ( Int, List Note ) -> List ( Int, Note )
@@ -65,7 +65,7 @@ collect result list =
                                 list
                                     |> List.map
                                         (Tuple.mapSecond
-                                            (List.filter (\n -> n /= theNote))
+                                            (List.filter ((/=) theNote))
                                         )
                                     |> List.filter
                                         (Tuple.second
@@ -86,10 +86,10 @@ classifyNotes : List Note -> List Ticket -> List ( Int, List Note )
 classifyNotes notes tickets =
     List.range 0 (List.length notes - 1)
         |> List.map
-            (\i ->
-                ( i
+            (\idx ->
+                ( idx
                 , tickets
-                    |> List.map (List.getAt i >> Maybe.withDefault -1)
+                    |> List.map (List.getAt idx >> Maybe.withDefault -1)
                 )
             )
         |> List.map
@@ -108,23 +108,23 @@ validTickets notes =
 
 invalidNums : List Note -> Ticket -> List Int
 invalidNums notes =
-    List.filter (\num -> not <| isValidOnAnyNote num notes)
+    List.filter (\num -> not (isValidOnAnyNote num notes))
 
 
 isValidOnAnyNote : Int -> List Note -> Bool
 isValidOnAnyNote num =
-    List.any (\n -> isValidOnNote n num)
+    List.any (\note -> isValidOnNote note num)
 
 
 allValidOnNote : Ticket -> Note -> Bool
-allValidOnNote ticket n =
-    List.all (isValidOnNote n) ticket
+allValidOnNote ticket note =
+    List.all (isValidOnNote note) ticket
 
 
 isValidOnNote : Note -> Int -> Bool
-isValidOnNote n val =
-    isValidInRange n.rangeA val
-        || isValidInRange n.rangeB val
+isValidOnNote note val =
+    isValidInRange note.rangeA val
+        || isValidInRange note.rangeB val
 
 
 isValidInRange : ( Int, Int ) -> Int -> Bool
