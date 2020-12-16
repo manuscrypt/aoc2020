@@ -24,8 +24,7 @@ main =
 
         partA =
             tickets
-                |> List.map (invalidNums notes)
-                |> List.concat
+                |> List.concatMap (invalidNums notes)
                 |> List.sum
 
         partB =
@@ -47,7 +46,11 @@ main =
 
 departureNotes : List ( Int, Note ) -> List ( Int, Note )
 departureNotes =
-    List.filter (\( _, note ) -> String.startsWith "departure" note.category)
+    List.filter
+        (Tuple.second
+            >> .category
+            >> String.startsWith "departure"
+        )
 
 
 collect : List ( Int, Note ) -> List ( Int, List Note ) -> List ( Int, Note )
@@ -56,7 +59,7 @@ collect result list =
         result
 
     else
-        case list |> List.filter (Tuple.second >> List.length >> (==) 1) of
+        case List.filter (Tuple.second >> List.length >> (==) 1) list of
             [ x ] ->
                 case x of
                     ( idx, [ theNote ] ) ->
@@ -69,8 +72,7 @@ collect result list =
                                         )
                                     |> List.filter
                                         (Tuple.second
-                                            >> List.length
-                                            >> (/=) 0
+                                            >> List.isEmpty
                                         )
                         in
                         collect (( idx, theNote ) :: result) remaining
@@ -103,7 +105,7 @@ classifyNotes notes tickets =
 
 validTickets : List Note -> List Ticket -> List Ticket
 validTickets notes =
-    List.filter (invalidNums notes >> List.length >> (==) 0)
+    List.filter (invalidNums notes >> List.isEmpty)
 
 
 invalidNums : List Note -> Ticket -> List Int
