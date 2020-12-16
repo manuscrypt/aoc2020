@@ -23,7 +23,10 @@ main =
             ( parseNotes notesString, parseNearbyTickets nearbyTicketsString )
 
         partA =
-            solveA notes tickets
+            tickets
+                |> List.map (invalidNums notes)
+                |> List.concat
+                |> List.sum
 
         partB =
             (myTicket :: validTickets notes tickets)
@@ -40,13 +43,6 @@ main =
         , output "part2"
         , output (String.fromInt partB)
         ]
-
-
-solveA : List Note -> List Ticket -> Int
-solveA notes =
-    List.map (invalidNums notes)
-        >> List.concat
-        >> List.sum
 
 
 departureNotes : List ( Int, Note ) -> List ( Int, Note )
@@ -107,7 +103,7 @@ classifyNotes notes tickets =
 
 validTickets : List Note -> List Ticket -> List Ticket
 validTickets notes =
-    List.filter (\t -> List.length (invalidNums notes t) == 0)
+    List.filter (invalidNums notes >> List.length >> (==) 0)
 
 
 invalidNums : List Note -> Ticket -> List Int
@@ -117,12 +113,12 @@ invalidNums notes =
 
 isValidOnAnyNote : Int -> List Note -> Bool
 isValidOnAnyNote num =
-    List.foldl (\n b -> b || isValidOnNote n num) False
+    List.any (\n -> isValidOnNote n num)
 
 
 allValidOnNote : Ticket -> Note -> Bool
 allValidOnNote ticket n =
-    ticket |> List.all (isValidOnNote n)
+    List.all (isValidOnNote n) ticket
 
 
 isValidOnNote : Note -> Int -> Bool
@@ -138,13 +134,20 @@ isValidInRange ( lo, hi ) val =
 
 parseNearbyTickets : String -> List Ticket
 parseNearbyTickets =
-    String.lines >> List.map (String.split "," >> List.filterMap String.toInt)
+    String.lines
+        >> List.map
+            (String.split ","
+                >> List.filterMap String.toInt
+            )
 
 
 parseNotes : String -> List Note
 parseNotes =
-    String.split "\n"
-        >> List.filterMap (Parser.run note >> Result.toMaybe)
+    String.lines
+        >> List.filterMap
+            (Parser.run noteParser
+                >> Result.toMaybe
+            )
 
 
 output : String -> Html msg
@@ -152,21 +155,21 @@ output s =
     div [] [ text s ]
 
 
-note : Parser Note
-note =
+noteParser : Parser Note
+noteParser =
     Parser.succeed Note
         |= (Parser.chompUntil ":" |> getChompedString)
         |. symbol ":"
         |. spaces
-        |= range
+        |= rangeParser
         |. spaces
         |. keyword "or"
         |. spaces
-        |= range
+        |= rangeParser
 
 
-range : Parser ( Int, Int )
-range =
+rangeParser : Parser ( Int, Int )
+rangeParser =
     Parser.succeed Tuple.pair
         |= int
         |. symbol "-"
