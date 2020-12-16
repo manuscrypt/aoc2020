@@ -60,7 +60,7 @@ collect result list =
         result
 
     else
-        case list |> List.filter (\l -> List.length (Tuple.second l) == 1) of
+        case list |> List.filter (Tuple.second >> List.length >> (==) 1) of
             [ x ] ->
                 case x of
                     ( idx, [ theNote ] ) ->
@@ -68,13 +68,14 @@ collect result list =
                             remaining =
                                 list
                                     |> List.map
-                                        (\l ->
-                                            ( Tuple.first l
-                                            , Tuple.second l
-                                                |> List.filter (\n -> n /= theNote)
-                                            )
+                                        (Tuple.mapSecond
+                                            (List.filter (\n -> n /= theNote))
                                         )
-                                    |> List.filter (\l -> List.length (Tuple.second l) /= 0)
+                                    |> List.filter
+                                        (Tuple.second
+                                            >> List.length
+                                            >> (/=) 0
+                                        )
                         in
                         collect (( idx, theNote ) :: result) remaining
 
@@ -92,14 +93,14 @@ classifyNotes notes tickets =
             (\i ->
                 ( i
                 , tickets
-                    |> List.map (\t -> List.getAt i t |> Maybe.withDefault -1)
+                    |> List.map (List.getAt i >> Maybe.withDefault -1)
                 )
             )
         |> List.map
             (\( idx, ticket ) ->
                 ( idx
                 , notes
-                    |> List.filter (\n -> allValidOnNote n ticket)
+                    |> List.filter (allValidOnNote ticket)
                 )
             )
 
@@ -119,8 +120,8 @@ isValidOnAnyNote num =
     List.foldl (\n b -> b || isValidOnNote n num) False
 
 
-allValidOnNote : Note -> Ticket -> Bool
-allValidOnNote n ticket =
+allValidOnNote : Ticket -> Note -> Bool
+allValidOnNote ticket n =
     ticket |> List.all (isValidOnNote n)
 
 
@@ -141,9 +142,9 @@ parseNearbyTickets =
 
 
 parseNotes : String -> List Note
-parseNotes lines =
-    String.split "\n" lines
-        |> List.filterMap (Parser.run note >> Result.toMaybe)
+parseNotes =
+    String.split "\n"
+        >> List.filterMap (Parser.run note >> Result.toMaybe)
 
 
 output : String -> Html msg
