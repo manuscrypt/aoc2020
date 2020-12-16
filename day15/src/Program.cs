@@ -12,20 +12,20 @@ namespace ConsoleApp1
 
 		static void Main(string[] args)
 		{
-			var sw = Stopwatch.StartNew();
-
 			var cache = new Dictionary<int, int>();
 			for (var j = 0; j < Spoken.Count - 1; j++)
 			{
 				cache[Spoken[j]] = j + 1;
 			}
-
 			var i = Spoken.Count;
 			var lastSpoken = Spoken.Last();
+
+			var sw = Stopwatch.StartNew();
 			while (i < Target)
 			{
 				lastSpoken = Turn(i++, lastSpoken, cache);
 			}
+			sw.Stop();
 
 			Console.WriteLine(lastSpoken);
 			Console.WriteLine("Took {0} secs", sw.Elapsed.TotalSeconds);
@@ -33,18 +33,12 @@ namespace ConsoleApp1
 
 		private static int Turn(int index, int lastSpoken, IDictionary<int, int> dict)
 		{
-			int spoken;
-			if (dict.ContainsKey(lastSpoken))
+			var spoken = 0;
+			if (dict.TryGetValue(lastSpoken, out var prevIndex))
 			{
-				spoken = index - dict[lastSpoken];
+				spoken = index - prevIndex;
 			}
-			else
-			{
-				spoken = 0;
-			}
-
 			dict[lastSpoken] = index;
-
 			return spoken;
 		}
 	}
