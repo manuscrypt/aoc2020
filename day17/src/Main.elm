@@ -156,7 +156,7 @@ mins : Model -> Coord
 mins model =
     let
         coords =
-            model |> Dict.filter (\_ v -> v == Active) |> Dict.keys
+            activeCoords model
     in
     { x = minAct .x coords, y = minAct .y coords, z = minAct .z coords, w = minAct .w coords }
 
@@ -165,9 +165,14 @@ maxs : Model -> Coord
 maxs model =
     let
         coords =
-            model |> Dict.filter (\_ v -> v == Active) |> Dict.keys
+            activeCoords model
     in
     { x = maxAct .x coords, y = maxAct .y coords, z = maxAct .z coords, w = maxAct .w coords }
+
+
+activeCoords : Model -> List Coord
+activeCoords model =
+    model |> Dict.filter (\_ v -> v == Active) |> Dict.keys
 
 
 minAct : (Coord -> Int) -> List Coord -> Int
