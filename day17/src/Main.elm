@@ -33,13 +33,9 @@ main =
     let
         partA =
             cycle 6 coordsPartA (parseInput input)
-                |> Dict.values
-                |> count Active
 
         partB =
             cycle 6 coordsPartB (parseInput input)
-                |> Dict.values
-                |> count Active
     in
     div []
         [ output "part1"
@@ -49,10 +45,12 @@ main =
         ]
 
 
-cycle : Int -> (Model -> List Coord) -> Model -> Model
+cycle : Int -> (Model -> List Coord) -> Model -> Int
 cycle c getCoordsFunc model =
     if c <= 0 then
         model
+            |> Dict.values
+            |> count Active
 
     else
         recalc (getCoordsFunc model) model
