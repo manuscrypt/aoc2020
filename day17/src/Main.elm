@@ -77,20 +77,7 @@ cycleA c model =
                                     )
                         )
         in
-        coords
-            |> List.foldl
-                (\coord dict ->
-                    let
-                        cell =
-                            Dict.get coord model
-                                |> Maybe.withDefault Inactive
-
-                        neighs =
-                            neighbours coord model
-                    in
-                    Dict.insert coord (toggleIfNeeded neighs cell) dict
-                )
-                (Dict.empty coordToString)
+        recalc coords model
             |> cycleA (c - 1)
 
 
@@ -123,21 +110,26 @@ cycleB c model =
                                     )
                         )
         in
-        coords
-            |> List.foldl
-                (\coord dict ->
-                    let
-                        cell =
-                            Dict.get coord model
-                                |> Maybe.withDefault Inactive
-
-                        neighs =
-                            neighbours coord model
-                    in
-                    Dict.insert coord (toggleIfNeeded neighs cell) dict
-                )
-                (Dict.empty coordToString)
+        recalc coords model
             |> cycleB (c - 1)
+
+
+recalc : List Coord -> Model -> Model
+recalc coords model =
+    coords
+        |> List.foldl
+            (\coord dict ->
+                let
+                    cell =
+                        Dict.get coord model
+                            |> Maybe.withDefault Inactive
+
+                    neighs =
+                        neighbours coord model
+                in
+                Dict.insert coord (toggleIfNeeded neighs cell) dict
+            )
+            (Dict.empty coordToString)
 
 
 toggleIfNeeded : List CellState -> CellState -> CellState
@@ -200,7 +192,7 @@ neighbours : Coord -> Model -> List CellState
 neighbours start model =
     relCoords start
         |> List.map
-            (\({ x, y, z, w } as coord) ->
+            (\coord ->
                 Dict.get coord model
                     |> Maybe.withDefault Inactive
             )
