@@ -32,12 +32,12 @@ main : Html.Html msg
 main =
     let
         partA =
-            cycleA 6 (parseInput input)
+            cycle 6 coordsPartA (parseInput input)
                 |> Dict.values
                 |> count Active
 
         partB =
-            cycleB 6 (parseInput input)
+            cycle 6 coordsPartB (parseInput input)
                 |> Dict.values
                 |> count Active
     in
@@ -49,69 +49,63 @@ main =
         ]
 
 
-cycleA : Int -> Model -> Model
-cycleA c model =
+cycle : Int -> (Model -> List Coord) -> Model -> Model
+cycle c getCoordsFunc model =
     if c <= 0 then
         model
 
     else
-        let
-            min =
-                mins model
+        recalc (getCoordsFunc model) model
+            |> cycle (c - 1) getCoordsFunc
 
-            max =
-                maxs model
 
-            coords =
-                List.range min.x max.x
+coordsPartA : Model -> List Coord
+coordsPartA model =
+    let
+        min =
+            mins model
+
+        max =
+            maxs model
+    in
+    List.range min.x max.x
+        |> List.concatMap
+            (\x ->
+                List.range min.y max.y
                     |> List.concatMap
-                        (\x ->
-                            List.range min.y max.y
-                                |> List.concatMap
-                                    (\y ->
-                                        List.range min.z max.z
-                                            |> List.map
-                                                (\z ->
-                                                    Coord x y z 0
-                                                )
+                        (\y ->
+                            List.range min.z max.z
+                                |> List.map
+                                    (\z ->
+                                        Coord x y z 0
                                     )
                         )
-        in
-        recalc coords model
-            |> cycleA (c - 1)
+            )
 
 
-cycleB : Int -> Model -> Model
-cycleB c model =
-    if c <= 0 then
-        model
+coordsPartB : Model -> List Coord
+coordsPartB model =
+    let
+        min =
+            mins model
 
-    else
-        let
-            min =
-                mins model
-
-            max =
-                maxs model
-
-            coords =
-                List.range min.x max.x
+        max =
+            maxs model
+    in
+    List.range min.x max.x
+        |> List.concatMap
+            (\x ->
+                List.range min.y max.y
                     |> List.concatMap
-                        (\x ->
-                            List.range min.y max.y
+                        (\y ->
+                            List.range min.z max.z
                                 |> List.concatMap
-                                    (\y ->
-                                        List.range min.z max.z
-                                            |> List.concatMap
-                                                (\z ->
-                                                    List.range min.w max.w
-                                                        |> List.map (\w -> Coord x y z w)
-                                                )
+                                    (\z ->
+                                        List.range min.w max.w
+                                            |> List.map (\w -> Coord x y z w)
                                     )
                         )
-        in
-        recalc coords model
-            |> cycleB (c - 1)
+            )
 
 
 recalc : List Coord -> Model -> Model
