@@ -9,11 +9,35 @@ import Pratt exposing (infixLeft, literal)
 main : Html.Html msg
 main =
     let
+        math precedences =
+            Parser.succeed identity
+                |= Pratt.expression
+                    { oneOf =
+                        [ literal int
+                        , parenthesizedExpression
+                        ]
+                    , andThenOneOf = precedences
+                    , spaces = Parser.spaces
+                    }
+                |. Parser.end
+
         partA =
-            solve mathA input
+            solve
+                (math
+                    [ infixLeft 1 (symbol "*") (*)
+                    , infixLeft 1 (symbol "+") (+)
+                    ]
+                )
+                input
 
         partB =
-            solve mathB input
+            solve
+                (math
+                    [ infixLeft 1 (symbol "*") (*)
+                    , infixLeft 2 (symbol "+") (+)
+                    ]
+                )
+                input
     in
     div []
         [ output "part1"
@@ -28,40 +52,6 @@ solve parser =
     String.lines
         >> List.filterMap (Parser.run parser >> Result.toMaybe)
         >> List.sum
-
-
-mathA : Parser Int
-mathA =
-    Parser.succeed identity
-        |= Pratt.expression
-            { oneOf =
-                [ literal int
-                , parenthesizedExpression
-                ]
-            , andThenOneOf =
-                [ infixLeft 1 (symbol "+") (+)
-                , infixLeft 1 (symbol "*") (*)
-                ]
-            , spaces = Parser.spaces
-            }
-        |. Parser.end
-
-
-mathB : Parser Int
-mathB =
-    Parser.succeed identity
-        |= Pratt.expression
-            { oneOf =
-                [ literal int
-                , parenthesizedExpression
-                ]
-            , andThenOneOf =
-                [ infixLeft 2 (symbol "+") (+)
-                , infixLeft 1 (symbol "*") (*)
-                ]
-            , spaces = Parser.spaces
-            }
-        |. Parser.end
 
 
 parenthesizedExpression : Pratt.Config Int -> Parser Int
