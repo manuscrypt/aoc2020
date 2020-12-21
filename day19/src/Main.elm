@@ -40,14 +40,23 @@ main : Html.Html msg
 main =
     let
         model =
-            parseInput input
+            parseInput sample1
 
         parser =
             createParser model
 
         partA =
             model.inputs
-                |> List.filterMap (Parser.run parser >> Result.toMaybe)
+                |> List.filter
+                    (\l ->
+                        case Parser.run parser l of
+                            Ok _ ->
+                                True
+
+                            Err _ ->
+                                False
+                    )
+                |> Debug.log "matched"
                 |> List.length
 
         newModel =
@@ -57,7 +66,6 @@ main =
                         |> Dict.update "8" (\_ -> Just [ [ Id "42" ], [ Id "42", Id "8" ] ])
                         |> Dict.update "11" (\_ -> Just [ [ Id "42", Id "31" ], [ Id "42", Id "11", Id "31" ] ])
             }
-                |> Debug.log "newmodel"
 
         newParser =
             createParser newModel
@@ -132,25 +140,14 @@ parseInput lines =
             { syntax =
                 rules
                     |> String.lines
-                    |> List.map
+                    |> List.filterMap
                         (\line ->
                             case Parser.run production line of
                                 Ok p ->
-                                    ( p.identifier, p.expression )
+                                    Just ( p.identifier, p.expression )
 
                                 Err err ->
-                                    Debug.todo
-                                        (err
-                                            |> List.map
-                                                (\e ->
-                                                    Debug.toString e.row
-                                                        ++ "/"
-                                                        ++ Debug.toString e.col
-                                                        ++ ":"
-                                                        ++ viewProblem e.problem
-                                                )
-                                            |> String.join ";;;"
-                                        )
+                                    Debug.todo (Debug.toString err)
                         )
                     |> Dict.fromList
             , inputs = String.lines inputs
@@ -270,6 +267,32 @@ viewProblem p =
 output : String -> Html msg
 output s =
     div [] [ text s ]
+
+
+sample0 : String
+sample0 =
+    """0: 3 0 | 3 5
+3: "a"
+5: "b"
+
+aab
+ab
+aaab
+abba
+aaaaaaaab"""
+
+
+sample1 : String
+sample1 =
+    """0: 3 | 3 0 5
+3: "a"
+5: "b"
+
+aab
+ab
+aaab
+abba
+aaaaaaaab"""
 
 
 sample : String
