@@ -40,7 +40,7 @@ main : Html.Html msg
 main =
     let
         model =
-            parseInput sample1
+            parseInput sample3
 
         parser =
             createParser model
@@ -293,6 +293,18 @@ ab
 aaab
 abba
 aaaaaaaab"""
+
+
+sample3 : String
+sample3 =
+    """0: 8 11
+8: 42 | 42 8
+11: 42 31 | 42 11 31
+42: "a"
+31: "b"
+
+aaab
+"""
 
 
 sample : String
